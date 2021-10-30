@@ -2,9 +2,10 @@
   "name": "cryptocurrency_bot",
   "version": "1.0.0",
   "description": "",
-  "main": "src/app.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "prestart": "tsc",
+    "start": "node dist/index.js"
   },
   "author": "",
   "license": "ISC",
