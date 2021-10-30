@@ -1,0 +1,1 @@
+{"version":3,"file":"config.js","sourceRoot":"","sources":["../../../src/API/telegramAPI/config.ts"],"names":[],"mappings":";;;;;AAAA,kDAA4B;AAE5B,mBAAM,CAAC,MAAM,EAAE,CAAC;AAEhB,IAAM,MAAM,GAAG;IACb,MAAM,EAAE,8BAA8B;IACtC,QAAQ,EAAE,OAAO,CAAC,GAAG,CAAC,QAAQ;CAC/B,CAAC;AAEF,qBAAe,MAAM,CAAC"}
