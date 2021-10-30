@@ -1,20 +1,20 @@
 import mongodb from 'mongodb';
 
-import TelegramAPI from '../API/telegramAPI';
-import CoinmarketAPI from '../API/coinmarketAPI';
+import TelegramAPI from '../API/telegramAPI/telegramAPI';
+import CoinmarketAPI from '../API/coinmarketAPI/coinmarketAPI';
 
-const startMessage = (chatId: string, messageName: string) => {
+const startMessage = async (chatId: string, messageName: string) => {
   const text = `Hello, ${messageName} , this bot will allow you to monitor the cryptocurrency market.`;
-  TelegramAPI.sendMessage(chatId, text);
+  await TelegramAPI.sendMessage(chatId, text);
 };
 
-const helpMessage = (chatId: string) => {
+const helpMessage = async (chatId: string) => {
   const text = `*To work with the bot, use the list of commands:* 
 /listrecent - list of cryptocurrencies, top 30 by market cap rating 
 /addtofavorite  - after the command, specify the name of the currency to add to favorites 
 /listfavorite - favorite currency list 
 /deletefavorite  - after the command, specify the name of the currency that you want to remove from favorites`;
-  TelegramAPI.sendMessage(chatId, text);
+  await TelegramAPI.sendMessage(chatId, text);
 };
 
 const getListCryptocurrencies = async (chatId: string) => {
@@ -22,7 +22,7 @@ const getListCryptocurrencies = async (chatId: string) => {
 
   if (typeof data === 'boolean') {
     const text = 'Error, coinmarketcap server not responding,please try again';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
   let result = '* Top 30 by market cap rating: *\n';
@@ -35,7 +35,7 @@ const getListCryptocurrencies = async (chatId: string) => {
     });
     result += `${i + 1}. ${name} _${price}_ \n`;
   }
-  TelegramAPI.sendMessage(chatId, result);
+  await TelegramAPI.sendMessage(chatId, result);
 };
 
 const getСryptocurrency = async (
@@ -47,7 +47,7 @@ const getСryptocurrency = async (
 
   if (typeof data === 'boolean') {
     const text = 'Error, coinmarketcap server not responding,please try again';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
@@ -85,7 +85,7 @@ const getСryptocurrency = async (
   const keyboard = {
     inline_keyboard: [[{ text: keyboardText, callback_data: callbackData }]],
   };
-  TelegramAPI.sendInlineMessage(chatId, result, keyboard);
+  await TelegramAPI.sendInlineMessage(chatId, result, keyboard);
 };
 
 const addCurrency = async (
@@ -97,7 +97,7 @@ const addCurrency = async (
   const arrMessageText = messageText.replace(/\s+/g, ' ').split(' ');
   if (arrMessageText.length !== 2) {
     text = 'Sorry, cryptocurrency  is invalid. Please use this format: \n/addtofavorite currencySymbol \nExample: \n/addtofavorite BTC \n';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
@@ -106,11 +106,11 @@ const addCurrency = async (
 
   if (checkCurrency === 404) {
     text = 'Error, coinmarketcap server not responding,please try again';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   } if (!checkCurrency) {
     text = 'Cryptocurrency not found, check the correctness of the currency symbol';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
@@ -118,16 +118,14 @@ const addCurrency = async (
   const findCurrency = await db.findOne(currency);
   if (findCurrency !== null) {
     text = `Error, ${name},  cryptocurrency has already been added`;
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
-  db.insertOne(currency, (err) => {
-    text = err
-      ? 'Error, no cryptocurrency added, please try again'
-      : 'Cryptocurrency added successfully';
-    TelegramAPI.sendMessage(chatId, text);
-  });
+  const result = await db.insertOne(currency)
+    .then(() => 'Cryptocurrency added successfully')
+    .catch(() => 'Error, no cryptocurrency added, please try again');
+  await TelegramAPI.sendMessage(chatId, result);
 };
 
 const removeCurrency = async (
@@ -138,7 +136,7 @@ const removeCurrency = async (
   const arrMessageText = messageText.replace(/\s+/g, ' ').split(' ');
   if (arrMessageText.length !== 2) {
     const text = 'Sorry, cryptocurrency  is invalid. Please use this format: \n/deletefavorite currencySymbol \nExample: \n/deletefavorite BTC \n';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
   const name = arrMessageText[1];
@@ -146,23 +144,21 @@ const removeCurrency = async (
   const findCurrency = await db.findOne(currency);
   if (!findCurrency) {
     const text = `Error, ${name}, cryptocurrency is not on the list of favorites`;
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
-  db.deleteOne(currency, (err) => {
-    const text = err
-      ? 'Error, cryptocurrency not deleted added, try again'
-      : 'Cryptocurrency deleted successfully';
-    TelegramAPI.sendMessage(chatId, text);
-  });
+  const result = await db.deleteOne(currency)
+    .then(() => 'Cryptocurrency deleted successfully')
+    .catch(() => 'Error, cryptocurrency not deleted added, try again');
+  await TelegramAPI.sendMessage(chatId, result);
 };
 
 const listFavoriteCurrency = async (chatId: string, db: mongodb.Collection) => {
   const arrayCurrency = await db.find({ chatId }).toArray();
   if (!arrayCurrency.length) {
     const text = 'Favorites list is empty';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
   let stringCurrency = '';
@@ -174,7 +170,7 @@ const listFavoriteCurrency = async (chatId: string, db: mongodb.Collection) => {
 
   if (typeof data === 'boolean') {
     const text = 'Error, coinmarketcap server not responding,please try again';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
 
@@ -194,7 +190,7 @@ const listFavoriteCurrency = async (chatId: string, db: mongodb.Collection) => {
       }_`
       + '\n';
   });
-  TelegramAPI.sendMessage(chatId, result);
+  await TelegramAPI.sendMessage(chatId, result);
 };
 
 const checkMessage = async (
@@ -208,12 +204,12 @@ const checkMessage = async (
   const checkCurrency = await CoinmarketAPI.checkСryptocurrency(currency);
   if (checkCurrency === 404) {
     const text = 'Error, coinmarketcap server not responding,please try again';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
   if (!checkCurrency) {
     const text = 'Error, unknown command use command: /help';
-    TelegramAPI.sendMessage(chatId, text);
+    await TelegramAPI.sendMessage(chatId, text);
     return;
   }
   getСryptocurrency(chatId, currency, db);
@@ -221,7 +217,7 @@ const checkMessage = async (
 
 const editedMessage = async (chatId: string) => {
   const text = 'Editing messages is not supported, create a new message';
-  TelegramAPI.sendMessage(chatId, text);
+  await TelegramAPI.sendMessage(chatId, text);
 };
 
 export {

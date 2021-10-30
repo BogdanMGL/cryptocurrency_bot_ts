@@ -1,41 +1,10 @@
 import axios, { AxiosError } from 'axios';
 
-import config from '../config/config';
+import config from './config';
+import * as types from './types';
 
 const { COIN_URL } = config;
 axios.defaults.headers.common['X-CMC_PRO_API_KEY'] = config.COIN_API_KEY;
-
-interface GetListCryptocurrencies {
-  data: {
-    symbol: string;
-    quote: {
-      USD: {
-        price: number;
-      };
-    };
-  }[];
-}
-interface ResponsList {
-  data: GetListCryptocurrencies;
-}
-
-interface GetСryptocurrency {
-  data: {
-    [key: string]: {
-      symbol: string;
-      name: string;
-      quote: {
-        USD: {
-          [key: string]: string | number;
-        };
-      };
-    };
-  };
-}
-
-interface ResponseItem {
-  data: GetСryptocurrency;
-}
 
 export default class CoinmarketAPI {
   static async getListCryptocurrencies() {
@@ -45,8 +14,8 @@ export default class CoinmarketAPI {
       convert: 'USD',
     };
     const result = await axios
-      .get<GetListCryptocurrencies>(`${COIN_URL}listings/latest`, { params })
-      .then((res: ResponsList) => res.data)
+      .get<types.GetListCryptocurrencies>(`${COIN_URL}listings/latest`, { params })
+      .then((res: types.ResponsList) => res.data)
       .catch(() => false);
     return result;
   }
@@ -64,10 +33,10 @@ export default class CoinmarketAPI {
 
   static async getСryptocurrency(currency: string) {
     const result = await axios
-      .get<GetСryptocurrency>(`${COIN_URL}quotes/latest`, {
+      .get<types.GetСryptocurrency>(`${COIN_URL}quotes/latest`, {
         params: { symbol: currency },
       })
-      .then((res: ResponseItem) => res.data)
+      .then((res: types.ResponseItem) => res.data)
       .catch(() => false);
     return result;
   }

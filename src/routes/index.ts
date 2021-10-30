@@ -1,16 +1,12 @@
 import { Express, Request, Response } from 'express';
 import mongodb from 'mongodb';
 
-import * as bot from '../function/index';
-import config from '../config/config';
+import * as bot from '../functions/index';
+import config from './config';
 
 const { TG_TOKEN } = config;
 
 export default function routes(app: Express, db: mongodb.Collection) {
-  app.get('/', (req: Request, res: Response) => {
-    res.send('I am work');
-  });
-
   app.post(`/${TG_TOKEN}`, (req: Request, res: Response) => {
     if ('edited_message' in req.body) {
       const messageChatId:string = req.body.edited_message.chat.id.toString();

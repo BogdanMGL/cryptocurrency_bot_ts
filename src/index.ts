@@ -1,8 +1,8 @@
 import express from 'express';
 import * as mongoDB from 'mongodb';
 
-import config from './config/config';
-import routes from './routes/routes';
+import config from './config';
+import routes from './routes';
 
 const { DB_CONN, DB_NAME, DB_COLLECTION } = config;
 const PORT: string | number = config.PORT || 4000;
